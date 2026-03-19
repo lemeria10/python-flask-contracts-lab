@@ -1,6 +1,7 @@
+
 #!/usr/bin/env python3
 
-from flask import Flask, request, current_app, g, make_response
+from flask import Flask,request,current_app,g, make_response
 
 # -----------------------------
 # Create Flask app
@@ -8,7 +9,7 @@ from flask import Flask, request, current_app, g, make_response
 app = Flask(__name__)
 
 # -----------------------------
-# Updated in-memory "database"
+# In-memory "database"
 # -----------------------------
 contracts = [
     {"id": 1, "contract_information": "This contract is for John and building a shed"},
@@ -21,27 +22,29 @@ customers = ["bob", "bill", "john", "sarah"]  # Sensitive info not returned
 # -----------------------------
 # Route: /contract/<id>
 # -----------------------------
-@app.route("/contract/<int:contract_id>", methods=["GET"])
-def get_contract(contract_id):
-    # Find contract by id
-    contract = next((c for c in contracts if c["id"] == contract_id), None)
+@app.route("/contract/<int:id>", methods=["GET"])
+def get_contract(id):
+    # Look for contract by id
+    contract = next((c for c in contracts if c["id"] == id), None)
     if contract:
-        # 200 OK with contract info
-        return contract, 200
+        # Contract found → 200 with contract information only
+        return contract["contract_information"], 200
     else:
-        # 404 Not Found
+        # Contract not found → 404
         return make_response({"error": "Contract not found"}, 404)
 
 # -----------------------------
 # Route: /customer/<customer_name>
 # -----------------------------
-
 @app.route("/customer/<customer_name>", methods=["GET"])
+@app.route("/customer/<customer_name>/", methods=["GET"])  # optional trailing slash
 def get_customer(customer_name):
-    name_lower = customer_name.lower()
-    if name_lower in customers:
-        return f"Customer {customer_name} exists!", 200
+    # Check if customer exists
+    if customer_name.lower() in customers:
+        # Customer found → 204 No Content, empty body
+        return "", 204
     else:
+        # Customer not found → 404
         return make_response({"error": "Customer not found"}, 404)
 
 # -----------------------------
